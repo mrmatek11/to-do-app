@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Navbar as HeroUINavbar,
   NavbarContent,
@@ -14,22 +16,33 @@ import { Input } from "@heroui/input";
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
+import { useState } from "react";
 
-import { siteConfig } from "@/config/site";
+import { 
+  CheckSquare, 
+  PlusSquare, 
+  ListTodo, 
+  Settings, 
+  Search, 
+  Moon, 
+  Sun 
+} from 'lucide-react';
+
 import { ThemeSwitch } from "@/components/theme-switch";
-import {
-  TwitterIcon,
-  GithubIcon,
-  DiscordIcon,
-  HeartFilledIcon,
-  SearchIcon,
-  Logo,
-} from "@/components/icons";
 
 export const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const menuItems = [
+    { label: "Todo List", href: "/", icon: <CheckSquare size={20} /> },
+    { label: "Categories", href: "/categories", icon: <ListTodo size={20} /> },
+    { label: "New Todo", href: "/new", icon: <PlusSquare size={20} /> },
+    { label: "Settings", href: "/settings", icon: <Settings size={20} /> },
+  ];
+
   const searchInput = (
     <Input
-      aria-label="Search"
+      aria-label="Search todos"
       classNames={{
         inputWrapper: "bg-default-100",
         input: "text-sm",
@@ -40,34 +53,43 @@ export const Navbar = () => {
         </Kbd>
       }
       labelPlacement="outside"
-      placeholder="Search..."
+      placeholder="Search todos..."
       startContent={
-        <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
+        <Search className="text-default-400" size={20} />
       }
       type="search"
     />
   );
 
   return (
-    <HeroUINavbar maxWidth="xl" position="sticky">
+    <HeroUINavbar 
+      maxWidth="xl" 
+      position="sticky" 
+      isMenuOpen={isMenuOpen}
+      onMenuOpenChange={setIsMenuOpen}
+    >
+      {/* Left side - Brand and Navigation */}
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
-            <Logo />
-            <p className="font-bold text-inherit">ACME</p>
+            <CheckSquare className="text-primary" size={24} />
+            <p className="font-bold text-inherit">Todo App</p>
           </NextLink>
         </NavbarBrand>
+
+        {/* Desktop Navigation */}
         <ul className="hidden lg:flex gap-4 justify-start ml-2">
-          {siteConfig.navItems.map((item) => (
+          {menuItems.map((item) => (
             <NavbarItem key={item.href}>
               <NextLink
                 className={clsx(
                   linkStyles({ color: "foreground" }),
-                  "data-[active=true]:text-primary data-[active=true]:font-medium",
+                  "data-[active=true]:text-primary data-[active=true]:font-medium flex items-center gap-2",
                 )}
                 color="foreground"
                 href={item.href}
               >
+                {item.icon}
                 {item.label}
               </NextLink>
             </NavbarItem>
@@ -75,61 +97,53 @@ export const Navbar = () => {
         </ul>
       </NavbarContent>
 
+      {/* Right side - Actions */}
       <NavbarContent
         className="hidden sm:flex basis-1/5 sm:basis-full"
         justify="end"
       >
-        <NavbarItem className="hidden sm:flex gap-2">
-          <Link isExternal aria-label="Twitter" href={siteConfig.links.twitter}>
-            <TwitterIcon className="text-default-500" />
-          </Link>
-          <Link isExternal aria-label="Discord" href={siteConfig.links.discord}>
-            <DiscordIcon className="text-default-500" />
-          </Link>
-          <Link isExternal aria-label="Github" href={siteConfig.links.github}>
-            <GithubIcon className="text-default-500" />
-          </Link>
-          <ThemeSwitch />
+        <NavbarItem className="hidden lg:flex mr-4">
+          {searchInput}
         </NavbarItem>
-        <NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>
-        <NavbarItem className="hidden md:flex">
+        
+        <NavbarItem className="flex items-center gap-3">
+          <ThemeSwitch />
+          
           <Button
-            isExternal
-            as={Link}
-            className="text-sm font-normal text-default-600 bg-default-100"
-            href={siteConfig.links.sponsor}
-            startContent={<HeartFilledIcon className="text-danger" />}
-            variant="flat"
+            color="primary"
+            variant="shadow"
+            as={NextLink}
+            href="/new"
+            startContent={<PlusSquare size={20} />}
           >
-            Sponsor
+            New Todo
           </Button>
         </NavbarItem>
       </NavbarContent>
 
+      {/* Mobile Menu Toggle */}
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <Link isExternal aria-label="Github" href={siteConfig.links.github}>
-          <GithubIcon className="text-default-500" />
-        </Link>
         <ThemeSwitch />
-        <NavbarMenuToggle />
+        <NavbarMenuToggle 
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+        />
       </NavbarContent>
 
+      {/* Mobile Menu */}
       <NavbarMenu>
         {searchInput}
         <div className="mx-4 mt-2 flex flex-col gap-2">
-          {siteConfig.navMenuItems.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
+          {menuItems.map((item, index) => (
+            <NavbarMenuItem key={`${item.label}-${index}`}>
               <Link
                 color={
-                  index === 2
-                    ? "primary"
-                    : index === siteConfig.navMenuItems.length - 1
-                      ? "danger"
-                      : "foreground"
+                  index === 2 ? "primary" : "foreground"
                 }
-                href="#"
+                href={item.href}
                 size="lg"
+                className="flex items-center gap-3"
               >
+                {item.icon}
                 {item.label}
               </Link>
             </NavbarMenuItem>
